@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ADIS.Core.ComponentServices">
+      <HintPath>..\..\ADIS.Core\ADIS.Core.ComponentServices\bin\Debug\ADIS.Core.ComponentServices.dll</HintPath>
+    </Reference>
     <Reference Include="ADIS.Core.Configuration">
       <HintPath>..\..\ADIS.Core\ADIS.Core.Configuration\bin\Debug\ADIS.Core.Configuration.dll</HintPath>
     </Reference>
@@ -63,6 +66,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ADIS.Core.ComponentServices;
 
 namespace SchemaGenerator
 {
@@ -72,64 +73,53 @@ namespace SchemaGenerator
             }
         }
 
-        protected string TypeToString(System.Data.SqlDbType t)
+        protected string TypeToString(DbDataType t)
         {
             switch (t)
             {
-                case System.Data.SqlDbType.Bit:
+                case DbDataType.BIT:
                     return "bit";
-                case System.Data.SqlDbType.BigInt:
+                case DbDataType.BIGINT:
                     return "bigint";
-                case System.Data.SqlDbType.Char:
+                case DbDataType.CHAR:
                     return "char";
-                case System.Data.SqlDbType.DateTime:
+                case DbDataType.DATETIME:
                     return "datetime";
-                case System.Data.SqlDbType.Binary:
-                    return "binary";
-                case System.Data.SqlDbType.DateTime2:
-                    return "datetime2";
-                case System.Data.SqlDbType.DateTimeOffset:
-                    return "datetimeoffset";
-                case System.Data.SqlDbType.Decimal:
+                case DbDataType.DECIMAL:
                     return "decimal";
-                case System.Data.SqlDbType.Float:
+                case DbDataType.FLOAT:
                     return "float";
-                case System.Data.SqlDbType.Image:
+                case DbDataType.IMAGE:
                     return "image";
-                case System.Data.SqlDbType.Int:
+                case DbDataType.INT:
                     return "int";
-                case System.Data.SqlDbType.Money:
+                case DbDataType.MONEY:
                     return "money";
-                case System.Data.SqlDbType.NChar:
-                    return "nchar";
-                case System.Data.SqlDbType.NText:
-                    return "ntext";
-                case System.Data.SqlDbType.NVarChar:
+
+                case DbDataType.VARCHAR:
                     return "nvarchar";
-                case System.Data.SqlDbType.Real:
+                case DbDataType.REAL:
                     return "real";
-                case System.Data.SqlDbType.SmallDateTime:
+                case DbDataType.SHORTDATETIME:
                     return "smalldatetime";
-                case System.Data.SqlDbType.SmallInt:
+                case DbDataType.SMALLINT:
                     return "smallint";
-                case System.Data.SqlDbType.SmallMoney:
-                    return "smallmoney";
-                case System.Data.SqlDbType.Text:
+                case DbDataType.TEXT:
                     return "text";
-                case System.Data.SqlDbType.Time:
+                case DbDataType.TIME:
                     return "time";
-                case System.Data.SqlDbType.Timestamp:
+                case DbDataType.TIMESTAMP:
                     return "timestamp";
-                case System.Data.SqlDbType.TinyInt:
+                case DbDataType.TINYINT:
                     return "tinyint";
-                case System.Data.SqlDbType.UniqueIdentifier:
+                case DbDataType.UNIQUEIDENTIFIER:
+                case DbDataType.UUID:
+                case DbDataType.GUID:
                     return "uniqueidentifier";
-                case System.Data.SqlDbType.VarBinary:
+                case DbDataType.VARBINARY:
+                case DbDataType.BINARYVAR:
+                case DbDataType.VARBIN:
                     return "varbinary";
-                case System.Data.SqlDbType.VarChar:
-                    return "varchar";
-                case System.Data.SqlDbType.Xml:
-                    return "xml";
                 default:
                     throw new Exception("Unrecognized data type");
 
@@ -169,22 +159,22 @@ namespace SchemaGenerator
             this.columns.Add(new SqlServerColumn(name,TypeToString(dataType), nullable,primary,length));
         }
 
-        public void AddColumn(string name, System.Data.SqlDbType dataType,bool nullable)
+        public void AddColumn(string name, DbDataType dataType,bool nullable)
         {
             this.columns.Add(new SqlServerColumn(name, TypeToString(dataType), nullable, false));
         }
 
-        public void AddColumn(string name, System.Data.SqlDbType dataType, bool nullable, int length)
+        public void AddColumn(string name, DbDataType dataType, bool nullable, int length)
         {
             this.columns.Add(new SqlServerColumn(name, TypeToString(dataType), nullable, false, length));
         }
 
-        public void AddColumn(string name, System.Data.SqlDbType dataType, bool nullable, bool primary)
+        public void AddColumn(string name, DbDataType dataType, bool nullable, bool primary)
         {
             this.columns.Add(new SqlServerColumn(name, TypeToString(dataType), nullable, primary));
         }
 
-        public void AddColumn(string name, System.Data.SqlDbType dataType,bool nullable, bool primary, int length)
+        public void AddColumn(string name, DbDataType dataType, bool nullable, bool primary, int length)
         {
             this.columns.Add(new SqlServerColumn(name, TypeToString(dataType), nullable, primary, length));
         }
@@ -192,14 +182,16 @@ namespace SchemaGenerator
         public string Generate()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("CREATE TABLE ");
+            sb.Append("CREATE TABLE [");
             sb.Append(schema);
-            sb.Append(".");
+            sb.Append("].[");
             sb.Append(tableName);
-            sb.Append("(");
+            sb.Append("](");
             sb.AppendLine();
             bool first = true;
-            foreach (var column in columns)
+
+            // Place primary key first
+            foreach (var column in columns.OrderBy(x => x.primary).Reverse())
             {
                 if (!first)
                 {
@@ -208,10 +200,11 @@ namespace SchemaGenerator
                     
                 }
                 first = false;
-                sb.Append("\t");
+                sb.Append("\t[");
                 sb.Append(column.name);
-                sb.Append(" ");
+                sb.Append("] [");
                 sb.Append(column.type);
+                sb.Append("]");
                 if (column.length != -1)
                 {
                     sb.Append("(");
